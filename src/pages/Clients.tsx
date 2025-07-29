@@ -3,16 +3,43 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
   FunnelIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+
+// Type pour un client
+interface Client {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  tags: string[];
+  lastSession: string;
+  totalSessions: number;
+  notes: string;
+}
 
 export function Clients() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [clients] = useState([
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false);
+  const [newClient, setNewClient] = useState<Partial<Client>>({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    tags: [],
+    notes: '',
+  });
+  const [tagInput, setTagInput] = useState('');
+  const [clients, setClients] = useState<Client[]>([
     {
       id: 1,
       name: 'Marie Lambert',
@@ -75,6 +102,65 @@ export function Clients() {
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Fonction pour ouvrir la modal d'ajout de client
+  const openAddClientModal = () => {
+    setIsAddClientOpen(true);
+  };
+
+  // Fonction pour fermer la modal d'ajout de client
+  const closeAddClientModal = () => {
+    setIsAddClientOpen(false);
+    // Réinitialiser le formulaire
+    setNewClient({
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      tags: [],
+      notes: '',
+    });
+    setTagInput('');
+  };
+
+  // Fonction pour gérer les changements dans le formulaire
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewClient((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Fonction pour ajouter un tag
+  const addTag = () => {
+    if (tagInput.trim() !== '' && !newClient.tags?.includes(tagInput.trim())) {
+      setNewClient((prev) => ({
+        ...prev,
+        tags: [...(prev.tags || []), tagInput.trim()],
+      }));
+      setTagInput('');
+    }
+  };
+
+  // Fonction pour supprimer un tag
+  const removeTag = (tagToRemove: string) => {
+    setNewClient((prev) => ({
+      ...prev,
+      tags: prev.tags?.filter((tag) => tag !== tagToRemove) || [],
+    }));
+  };
+
+  // Fonction pour ajouter un nouveau client
+  const addClient = () => {
+    if (newClient.name && newClient.email) {
+      const newClientWithId: Client = {
+        ...newClient as Client,
+        id: clients.length > 0 ? Math.max(...clients.map((c) => c.id)) + 1 : 1,
+        lastSession: 'Jamais',
+        totalSessions: 0,
+      };
+      setClients([...clients, newClientWithId]);
+      closeAddClientModal();
+    }
+  };
+
   return (
     <div>
       <div className="mb-8 flex justify-between items-center">
@@ -84,7 +170,7 @@ export function Clients() {
             Gérez votre base de clients et leur historique
           </p>
         </div>
-        <Button className="flex items-center">
+        <Button className="flex items-center" onClick={openAddClientModal}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Ajouter un client
         </Button>
@@ -182,6 +268,127 @@ export function Clients() {
           </Card>
         ))}
       </div>
+
+      {/* Modal d'ajout de client */}
+      <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouveau client</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nom
+              </Label>
+              <Input
+                id="name"
+                name="name"
+                value={newClient.name}
+                onChange={handleInputChange}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={newClient.email}
+                onChange={handleInputChange}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">
+                Téléphone
+              </Label>
+              <Input
+                id="phone"
+                name="phone"
+                value={newClient.phone}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="address" className="text-right">
+                Adresse
+              </Label>
+              <Input
+                id="address"
+                name="address"
+                value={newClient.address}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="tags" className="text-right">
+                Tags
+              </Label>
+              <div className="col-span-3 space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    id="tagInput"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    placeholder="Ajouter un tag"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addTag();
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={addTag} variant="outline">
+                    Ajouter
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {newClient.tags?.map((tag, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <XMarkIcon className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="notes" className="text-right">
+                Notes
+              </Label>
+              <Textarea
+                id="notes"
+                name="notes"
+                value={newClient.notes}
+                onChange={handleInputChange}
+                className="col-span-3"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeAddClientModal}>
+              Annuler
+            </Button>
+            <Button type="button" onClick={addClient}>
+              Ajouter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

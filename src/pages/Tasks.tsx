@@ -238,8 +238,7 @@ export function Tasks() {
               </SelectContent>
             </Select>
             <Button onClick={addTask} className="flex items-center">
-              <Plus
-Icon className="h-4 w-4 mr-2" />
+              <PlusIcon className="h-4 w-4 mr-2" />
               Ajouter
             </Button>
           </div>
