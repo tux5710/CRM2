@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { Clients } from './pages/Clients';
-import CalendarPage from './pages/Calendar';
+import { Calendar } from './pages/Calendar';
 import { Packages } from './pages/Packages';
 import { Invoices } from './pages/Invoices';
 import { Contracts } from './pages/Contracts';
@@ -52,7 +52,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/clients" element={<Clients />} />
-              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/calendar" element={<Calendar />} />
               <Route path="/packages" element={<Packages />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/contracts" element={<Contracts />} />
